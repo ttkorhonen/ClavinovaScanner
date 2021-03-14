@@ -35,7 +35,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_TIME_MS   50
 #define MAX_TIME_MS_N (MAX_TIME_MS - MIN_TIME_MS)
 
-#define PEDAL_PIN     40
+#define PEDAL_LEFT     40
+#define PEDAL_MID      41
+#define PEDAL_RIGHT    16
+
 
 /* Yamaha Clavinova 12 * 15 matrix 
  *  12 output pins, 6 for outer keys (first contact) and 6 for inner keys (final contact)
@@ -73,11 +76,18 @@ byte          keys_state[KEYS_NUMBER];
 unsigned long keys_time[KEYS_NUMBER];
 boolean       signals[sizeof(input_pins) * sizeof(output_pins)];
 boolean       pedal_enabled;
+boolean      r_pedal_on = 0;
+boolean      m_pedal_on = 0;
+boolean      l_pedal_on = 0;
 
 void setup() {
     Serial.begin(115200);
 
     delay(1000);
+    pinMode(PEDAL_LEFT, INPUT_PULLUP);
+    pinMode(PEDAL_MID, INPUT_PULLUP);
+    pinMode(PEDAL_RIGHT, INPUT_PULLUP);
+
     pinMode(13, OUTPUT);
     digitalWrite(13, LOW);
     int i;
@@ -93,9 +103,8 @@ void setup() {
     for (byte pin = 0; pin < sizeof(input_pins); pin++)
     {
         pinMode(input_pins[pin], INPUT_PULLDOWN);
-    }
-    pinMode(PEDAL_PIN, INPUT_PULLUP);
-    pedal_enabled = digitalRead(PEDAL_PIN) == HIGH;
+    };
+
 }
 
 void send_midi_event(byte status_byte, byte key_index, unsigned long time)
@@ -148,11 +157,40 @@ void loop() {
     }
 #endif
     byte pedal = LOW;
-    if (pedal_enabled)
     {
-        pedal = !digitalRead(PEDAL_PIN);
-        digitalWrite(13, pedal);
-    }
+        pedal = !digitalRead(PEDAL_RIGHT);
+        if(pedal!=r_pedal_on) {
+          if(pedal) {
+           usbMIDI.sendControlChange(64,127,1);            
+          } else  {
+            usbMIDI.sendControlChange(64,0,1);           //
+          }
+          r_pedal_on=pedal;
+        }
+     }
+     {
+        pedal = !digitalRead(PEDAL_MID);
+        if(pedal!=m_pedal_on) {
+          if(pedal) {
+           usbMIDI.sendControlChange(66,127,1);
+          } else  {
+            usbMIDI.sendControlChange(66,0,1);;
+          }
+          m_pedal_on=pedal;
+        }
+     }
+    {
+        pedal = !digitalRead(PEDAL_LEFT);
+        if(pedal!=l_pedal_on) {
+          if(pedal) {
+            usbMIDI.sendControlChange(67,127,1);
+          } else  {
+            usbMIDI.sendControlChange(67,0,1);
+          }
+          l_pedal_on=pedal;
+        }
+     }
+
     //Scan the matrix
     
     
@@ -216,39 +254,8 @@ void loop() {
             case KEY_RELEASED:
                 if (!signals[key*2])
                 {
-                    if (pedal)
-                    {
-                        keys_state[key] = KEY_SUSTAINED;
-                        break;
-                    }
                     keys_state[key] = KEY_OFF;
                     send_midi_event(0x80, key, millis() - keys_time[key]);
-                }
-                break;
-            case KEY_SUSTAINED:
-                if (!pedal)
-                {
-                    keys_state[key] = KEY_OFF;
-                    send_midi_event(0x80, key, MAX_TIME_MS);
-                }
-                if (signals[key*2])
-                {
-                    keys_state[key] = KEY_SUSTAINED_RESTART;
-                    keys_time[key] = millis();
-                }
-                break;
-            case KEY_SUSTAINED_RESTART:
-                if (!signals[key*2])
-                {
-                    keys_state[key] = KEY_SUSTAINED;
-                    digitalWrite(13, HIGH);
-                    break;
-                }
-                if (signals[key*2+1])
-                {
-                    keys_state[key] = KEY_ON;
-                    send_midi_event(0x80, key, MAX_TIME_MS);
-                    send_midi_event(0x90, key, millis() - keys_time[key]);
                 }
                 break;
             }
