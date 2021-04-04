@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define PEDAL_LEFT     40
 #define PEDAL_MID      41
-#define PEDAL_RIGHT    16
+#define PEDAL_RIGHT    22
 
 
 /* Yamaha Clavinova 12 * 15 matrix 
