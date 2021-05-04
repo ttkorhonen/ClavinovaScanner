@@ -20,13 +20,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Visualization using Non-Blocking WS2812Serial
+// Visualization using Non-Blocking WS2812Serial and a NeoPixel strip (144 LEDs/m)
 
 #include <WS2812Serial.h>
 #define USE_WS2812SERIAL
 #include <FastLED.h>
 
-// How many leds in your strip?
+// Number of LEDs is twice the number of keys. 
 #define NUM_LEDS 176
 
 #define LED_DATA_PIN 20
