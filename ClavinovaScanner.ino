@@ -20,6 +20,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Visualization using Non-Blocking WS2812Serial
+
+#include <WS2812Serial.h>
+#define USE_WS2812SERIAL
+#include <FastLED.h>
+
+// How many leds in your strip?
+#define NUM_LEDS 176
+
+#define LED_DATA_PIN 20
 
 
 #define KEYS_NUMBER 90
@@ -80,6 +90,9 @@ boolean      r_pedal_on = 0;
 boolean      m_pedal_on = 0;
 boolean      l_pedal_on = 0;
 
+// Define the array of leds
+CRGB leds[NUM_LEDS];
+
 void setup() {
     Serial.begin(115200);
 
@@ -105,6 +118,8 @@ void setup() {
         pinMode(input_pins[pin], INPUT_PULLDOWN);
     };
 
+  LEDS.addLeds<WS2812SERIAL,LED_DATA_PIN,RGB>(leds,NUM_LEDS);
+  LEDS.setBrightness(84);
 }
 
 void send_midi_event(byte status_byte, byte key_index, unsigned long time)
@@ -130,11 +145,18 @@ void send_midi_event(byte status_byte, byte key_index, unsigned long time)
       case 0x90:
       {
         usbMIDI.sendNoteOn(key,vel,1);
+        leds[key_index*2-5] = CRGB::Blue;
+        // Show the leds
+        FastLED.show();
         break;
       }
       case 0x80:
       {
         usbMIDI.sendNoteOff(key,vel,1);
+        leds[key_index*2-5] = CRGB::Black;
+        // Show the leds
+        FastLED.show();
+
       }
       
     }
