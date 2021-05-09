@@ -79,7 +79,7 @@ byte input_pins[] = {
 //#define DEBUG_SCANS_PER_SECOND
 
 
-//uncoment the next line to get text midi message at output
+//uncomment the next line to get text midi message at output
 //#define DEBUG_MIDI_MESSAGE
 
 byte          keys_state[KEYS_NUMBER];
@@ -118,8 +118,10 @@ void setup() {
         pinMode(input_pins[pin], INPUT_PULLDOWN);
     };
 
-  LEDS.addLeds<WS2812SERIAL,LED_DATA_PIN,RGB>(leds,NUM_LEDS);
+  LEDS.addLeds<WS2812SERIAL,LED_DATA_PIN,BRG>(leds,NUM_LEDS);
   LEDS.setBrightness(84);
+  usbMIDI.setHandleNoteOff(myNoteOff);
+  usbMIDI.setHandleNoteOn(myNoteOn);
 }
 
 void send_midi_event(byte status_byte, byte key_index, unsigned long time)
@@ -145,7 +147,7 @@ void send_midi_event(byte status_byte, byte key_index, unsigned long time)
       case 0x90:
       {
         usbMIDI.sendNoteOn(key,vel,1);
-        leds[key_index*2-5] = CRGB::Blue;
+        leds[key_index*2-5] = CRGB::Green;
         // Show the leds
         FastLED.show();
         break;
@@ -163,6 +165,20 @@ void send_midi_event(byte status_byte, byte key_index, unsigned long time)
 
 #endif
 }
+void myNoteOn(byte channel, byte note, byte velocity) {
+        leds[(note-19)*2-5] = CRGB::Green;
+        // Show the leds
+        FastLED.show();
+ 
+}
+
+void myNoteOff(byte channel, byte note, byte velocity) {
+         leds[(note-19)*2-5] = CRGB::Black;
+        // Show the leds
+        FastLED.show();
+
+}
+
 
 void loop() {
 #ifdef DEBUG_SCANS_PER_SECOND
@@ -178,6 +194,7 @@ void loop() {
         start = current;
     }
 #endif
+    usbMIDI.read();
     byte pedal = LOW;
     {
         pedal = !digitalRead(PEDAL_RIGHT);
