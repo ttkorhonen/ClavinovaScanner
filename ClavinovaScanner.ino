@@ -74,7 +74,12 @@ byte input_pins[] = {
     39
 };
 
-
+byte black_keys[]= {
+    22, 25, 27, 30, 32, 34, 37, 39, 42, 44, 46,
+    49, 51, 54, 56, 58, 61, 63, 66, 68, 70, 73,
+    75, 78, 80, 82, 85, 87, 90, 92, 94, 97, 99,
+    102,104,106
+};
 //uncomment the next line to inspect the number of scans per seconds
 //#define DEBUG_SCANS_PER_SECOND
 
@@ -92,9 +97,17 @@ boolean      l_pedal_on = 0;
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
+CRGB keyOnLed [NUM_LEDS];
+CRGB keyOffLed [NUM_LEDS];
 
 void setup() {
     Serial.begin(115200);
+
+    for(CRGB & pixel : keyOffLed) { pixel = CRGB::Black; }
+    for(CRGB & pixel : keyOnLed) { pixel = CRGB::Red; }
+    for (byte i=0;i<sizeof(black_keys);i++) {
+        keyOnLed[(black_keys[i]-19)*2-5] = CRGB::Green;
+    }
 
     delay(1000);
     pinMode(PEDAL_LEFT, INPUT_PULLUP);
@@ -120,7 +133,7 @@ void setup() {
 
   LEDS.addLeds<WS2812SERIAL,LED_DATA_PIN,BRG>(leds,NUM_LEDS);
   LEDS.setBrightness(84);
-  usbMIDI.setHandleNoteOff(myNoteOff);
+  usbMIDI.setHandleNoteOff(myNoteOff); // register callbacks
   usbMIDI.setHandleNoteOn(myNoteOn);
 }
 
@@ -147,7 +160,7 @@ void send_midi_event(byte status_byte, byte key_index, unsigned long time)
       case 0x90:
       {
         usbMIDI.sendNoteOn(key,vel,1);
-        leds[key_index*2-5] = CRGB::Green;
+        leds[key_index*2-5] = keyOnLed[key_index*2-5];//CRGB::Green;
         // Show the leds
         FastLED.show();
         break;
@@ -155,7 +168,7 @@ void send_midi_event(byte status_byte, byte key_index, unsigned long time)
       case 0x80:
       {
         usbMIDI.sendNoteOff(key,vel,1);
-        leds[key_index*2-5] = CRGB::Black;
+        leds[key_index*2-5] = keyOffLed[key_index*2-5];//CRGB::Black;
         // Show the leds
         FastLED.show();
 
