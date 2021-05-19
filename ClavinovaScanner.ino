@@ -160,7 +160,11 @@ void send_midi_event(byte status_byte, byte key_index, unsigned long time)
       case 0x90:
       {
         usbMIDI.sendNoteOn(key,vel,1);
-        leds[key_index*2-5] = keyOnLed[key_index*2-5];//CRGB::Green;
+        if(key_index<3){
+          leds[0] = keyOnLed[0];
+        } else {
+          leds[key_index*2-5] = keyOnLed[key_index*2-5];//CRGB::Green;
+        }
         // Show the leds
         FastLED.show();
         break;
@@ -168,7 +172,11 @@ void send_midi_event(byte status_byte, byte key_index, unsigned long time)
       case 0x80:
       {
         usbMIDI.sendNoteOff(key,vel,1);
-        leds[key_index*2-5] = keyOffLed[key_index*2-5];//CRGB::Black;
+       if(key_index<3){
+          leds[0] = keyOffLed[0];
+        } else {
+          leds[key_index*2-5] = keyOffLed[key_index*2-5];//CRGB::Black;
+        }
         // Show the leds
         FastLED.show();
 
@@ -179,16 +187,28 @@ void send_midi_event(byte status_byte, byte key_index, unsigned long time)
 #endif
 }
 void myNoteOn(byte channel, byte note, byte velocity) {
-        leds[(note-19)*2-5] = CRGB::Green;
-        // Show the leds
-        FastLED.show();
+  if(note>=21 || note < 106) {
+    if (note==21) {
+      leds[0]=keyOnLed[0]; 
+      } else {
+        leds[(note-19)*2-5] = keyOnLed[(note-19)*2-5];//CRGB::Green;
+      }
+      // Show the leds
+      FastLED.show();
+  }
  
 }
 
 void myNoteOff(byte channel, byte note, byte velocity) {
-         leds[(note-19)*2-5] = CRGB::Black;
-        // Show the leds
+  if(note>=21 || note < 106) {
+   if (note==21) {
+         leds[0]=keyOffLed[0]; 
+      } else {
+         leds[(note-19)*2-5] = keyOffLed[(note-19)*2-5];//CRGB::Black;
+      }
+      // Show the leds
         FastLED.show();
+  }
 
 }
 
