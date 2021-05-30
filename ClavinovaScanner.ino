@@ -104,9 +104,9 @@ void setup() {
     Serial.begin(115200);
 
     for(CRGB & pixel : keyOffLed) { pixel = CRGB::Black; }
-    for(CRGB & pixel : keyOnLed) { pixel = CRGB::Red; }
+    for(CRGB & pixel : keyOnLed) { pixel = CRGB::White; }
     for (byte i=0;i<sizeof(black_keys);i++) {
-        keyOnLed[(black_keys[i]-19)*2-5] = CRGB::Green;
+        keyOnLed[(black_keys[i]-19)*2-5] = CRGB::Blue;
     }
 
     delay(1000);
@@ -132,7 +132,7 @@ void setup() {
     };
 
   LEDS.addLeds<WS2812SERIAL,LED_DATA_PIN,BRG>(leds,NUM_LEDS);
-  LEDS.setBrightness(84);
+  LEDS.setBrightness(120);
   usbMIDI.setHandleNoteOff(myNoteOff); // register callbacks
   usbMIDI.setHandleNoteOn(myNoteOn);
 }
